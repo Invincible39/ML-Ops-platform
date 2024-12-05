@@ -102,4 +102,4 @@ def complete_deployment(self):
             raise self.retry(exc=exc)
     finally:
         db.close()
-        return response      
+        return response 
