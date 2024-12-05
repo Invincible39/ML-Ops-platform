@@ -1,0 +1,29 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "8000:8000"
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=sqlite:///./test.db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your_secret_key
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  worker:
+    build: .
+    command: celery -A celery_app.celery_app worker --beat --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=sqlite:///./test.db
+      - REDIS_URL=redis://redis:6379/0
+      - SECRET_KEY=your_secret_key
+
+  redis:
+    image: redis:6-alpine
+    ports:
+      - "6379:6379"

@@ -1,0 +1,30 @@
+# Application Dependencies
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+pydantic[email]
+python-dotenv
+passlib[bcrypt]
+python-jose
+python-multipart
+bcrypt
+cryptography
+redis
+PyJWT
+celery
+flower
+
+# Testing Dependencies
+pytest
+pytest-asyncio
+pytest-cov
+httpx
+SQLAlchemy-Utils
+
+# Additional Dependencies
+email-validator
+starlette
+jinja2
+itsdangerous
+asgiref
