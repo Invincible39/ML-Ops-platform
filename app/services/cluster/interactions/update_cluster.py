@@ -43,31 +43,56 @@ class UpdateCluster:
         ).all()
 
     def check_resource_limits(self):
-        max_cpu = max([deployment.required_cpu for deployment in self.deployments])
-        max_ram = max([deployment.required_ram for deployment in self.deployments])
-        max_gpu = max([deployment.required_gpu for deployment in self.deployments])
+        if self.deployments:
+            max_cpu = max([deployment.required_cpu for deployment in self.deployments])
+            max_ram = max([deployment.required_ram for deployment in self.deployments])
+            max_gpu = max([deployment.required_gpu for deployment in self.deployments])
 
         if self.request.cpu_size:
-            if self.request.cpu_size < max_cpu:
+            if self.deployments and self.request.cpu_size < max_cpu:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cannot Update Cluster CPU Size As A Currently Running Deployment Requires More CPU",
                 )
+            if self.request.cpu_size > self.cluster.cpu_size:
+                self.cluster.available_cpu = self.cluster.available_cpu - (
+                    self.cluster.cpu_size - self.request.cpu_size
+                )
+            else:
+                self.cluster.available_cpu = self.cluster.available_cpu + (
+                    self.request.cpu_size - self.cluster.cpu_size
+                )
             self.cluster.cpu_size = self.request.cpu_size
 
         if self.request.ram_size:
-            if self.request.ram_size < max_ram:
+            if self.deployments and self.request.ram_size < max_ram:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cannot Update Cluster RAM Size As A Currently Running Deployment Requires More RAM",
                 )
+            if self.request.ram_size > self.cluster.ram_size:
+                self.cluster.available_ram = self.cluster.available_ram - (
+                    self.cluster.ram_size - self.request.ram_size
+                )
+            else:
+                self.cluster.available_ram = self.cluster.available_ram + (
+                    self.request.ram_size - self.cluster.ram_size
+                )
             self.cluster.ram_size = self.request.ram_size
 
         if self.request.gpu_size:
-            if self.request.gpu_size < max_gpu:
+            if self.deployments and self.request.gpu_size < max_gpu:
                 raise HTTPException(
                     status_code=status.HTTP_400_BAD_REQUEST,
                     detail="Cannot Update Cluster GPU Size As A Currently Running Deployment Requires More GPU",
+                )
+            if self.request.gpu_size > self.cluster.gpu_size:
+                self.cluster.available_gpu = self.cluster.available_gpu - (
+                    self.cluster.gpu_size - self.request.gpu_size
+                )
+            else:
+                self.cluster.available_gpu = self.cluster.available_gpu + (
+                    self.request.gpu_size - self.cluster.gpu_size
                 )
             self.cluster.gpu_size = self.request.gpu_size
 
