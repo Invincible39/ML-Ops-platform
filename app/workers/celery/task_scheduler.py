@@ -6,7 +6,7 @@ from celery import Celery
 from kombu.serialization import registry
 from kombu import Exchange, Queue
 from celery.schedules import crontab
-
+from datetime import timedelta
 from configs.config import settings
 
 from database.redis_db import redis_db
@@ -50,12 +50,12 @@ celery.conf.update(**CELERY_CONFIG)
 celery.conf.beat_schedule = {
     "schedule_deployments": {
         "task": "workers.celery.task_scheduler.schedule_deployment",
-        "schedule": crontab(),
+        "schedule": timedelta(seconds=10),
         "options": {"queue": "critical"},
     },
     "complete_deployments": {
         "task": "workers.celery.task_scheduler.complete_deployment",
-        "schedule": crontab(),
+        "schedule": timedelta(seconds=10),
         "options": {"queue": "critical"},
     },
 }
@@ -92,6 +92,7 @@ def complete_deployment(self):
     try:
         db = get_celery_db()
         response = complete_deployment(db=db)
+        db.commit()
         return response | {"success": True}
     except Exception as exc:
         response = {"success": False, "error": str(exc)}
@@ -101,4 +102,4 @@ def complete_deployment(self):
             raise self.retry(exc=exc)
     finally:
         db.close()
-        return response
+        return response      
