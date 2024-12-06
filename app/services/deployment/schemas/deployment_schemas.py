@@ -1,8 +1,5 @@
-# app/services/deployment/schemas/deployment_schemas.py
-
 from pydantic import BaseModel, validator
 from uuid import UUID
-from services.deployment.enums.deployment_status import DeploymentStatus
 
 class DeploymentCreate(BaseModel):
     docker_image: str
@@ -37,7 +34,7 @@ class DeploymentResponse(BaseModel):
     required_ram: int
     required_gpu: int
     priority: int
-    status: DeploymentStatus
+    status: str
     attempts: int
     cluster_id: UUID
     user_id: UUID
